@@ -1,159 +1,131 @@
-# DNS-resolver
+# DNS Resolver
 
-This project implements both iterative and recursive DNS resolution. It is designed to resolve domain names by first querying root servers and then following the DNS hierarchy until an answer is obtained. The code uses the Python **dnspython** library to construct, send, and process DNS queries.
+This project implements both **iterative** and **recursive** DNS resolution. It resolves domain names by querying root servers and following the DNS hierarchy until an answer is obtained. The implementation uses the Python **dnspython** library to construct, send, and process DNS queries.
 
 ---
 
-## Assignment Features
+## 🔹 Features
 
-**Implemented:**
-- **Iterative DNS Lookup:**  
+### ✅ Implemented
+
+- **Iterative DNS Lookup:**
   - Starts with a predefined set of root DNS servers.
   - Queries a server for an A record.
   - If no answer is found, extracts NS records from the authority section.
-  - Resolves NS hostnames to IP addresses and continues the lookup through TLD and authoritative servers.
+  - Resolves NS hostnames to IP addresses and continues lookup through TLD and authoritative servers.
   
-- **Recursive DNS Lookup:**  
-  - Leverages the system's default DNS resolver (e.g., Google DNS or ISP DNS) to perform a recursive lookup.
-  - Prints all A records found for the given domain.
+- **Recursive DNS Lookup:**
+  - Uses the system's default DNS resolver (e.g., Google DNS, ISP DNS) for a recursive lookup.
+  - Returns all A records found for a given domain.
 
-**Not Implemented:**
-- **Advanced Error Recovery or Retry Mechanisms:**  
-  - Basic exception handling is provided, but further recovery strategies (such as query retries on multiple servers) are not implemented.
+### ❌ Not Implemented
 
----
-
-## Design Decisions
-
-- **Use of UDP for DNS Queries:**  
-  - DNS queries are typically performed over UDP due to its low overhead. A timeout of 3 seconds is set (line defining `TIMEOUT`) to balance between waiting long enough for responses and failing fast in case of issues.
-
-- **Iterative vs. Recursive Resolution:**  
-  - **Iterative Resolution:**  
-    - Follows the hierarchical DNS structure by starting at the root and moving down. This approach clearly demonstrates the iterative process and allows us to manually extract and resolve nameserver information.
-  - **Recursive Resolution:**  
-    - Leverages the system’s recursive resolver for simplicity and to compare results with the iterative method.
-
-
-
-- **Design Decision for Timeout :**  
-  - The timeout value (3 seconds) was chosen based on a trade-off between network variability and responsiveness. This value helps prevent the program from hanging too long on a non-responsive DNS server.
+- **Advanced Error Handling & Retries:**
+  - Basic exception handling is included, but retry strategies (e.g., switching servers on failure) are not implemented.
 
 ---
 
-## Implementation
+## 🔹 Design Decisions
 
-### High-Level Overview
+### 🔹 Use of UDP for DNS Queries
+- Queries are sent over **UDP** for efficiency.
+- A **3-second timeout** (defined in `TIMEOUT`) ensures responsiveness while handling network variability.
 
-The project is broken down into the following key functions:
-- **`send_dns_query(server, domain)`**  
-  - Constructs a DNS query message for an A record.
-  - Sends the query over UDP and returns the response.
-  
-- **`extract_next_nameservers(response)`**  
-  - Extracts NS records from the authority section.
-  - Resolves NS hostnames to IP addresses to be used in subsequent queries.
+### 🔹 Iterative vs. Recursive Resolution
+- **Iterative Resolution:** Starts at the root, moving down the hierarchy, manually extracting and resolving nameservers.
+- **Recursive Resolution:** Uses the system’s built-in recursive resolver for ease and comparison.
 
-- **`iterative_dns_lookup(domain)`**  
-  - Manages the iterative resolution process.
-  - Updates the resolution stage (ROOT → TLD → AUTH) as it queries nameservers until an answer is found.
-
-- **`recursive_dns_lookup(domain)`**  
-  - Uses the system’s resolver to perform recursive DNS resolution.
-
-### Code Flow Diagram
-
-Below is a simplified flow diagram representing the iterative DNS lookup process:
-
-flowchart TD
-    A[Start: Domain to Resolve] --> B[Set next_ns_list to Root Servers]
-    B --> C{While next_ns_list not empty?}
-    C -- Yes --> D[Pick first nameserver from list]
-    D --> E[Send DNS Query via UDP]
-    E --> F{Valid Response?}
-    F -- Yes --> G{Response contains answer?}
-    G -- Yes --> H[Print Answer and Exit]
-    G -- No --> I[Extract NS records and resolve to IPs]
-    I --> J[Update next_ns_list and Resolution Stage]
-    J --> C
-    F -- No --> K[Print Error and Exit]
-    C -- No --> L[Print Resolution Failed]
-
-### Code Flow (Iterative)
-
-1.  **Initialization:**
-    *   The lookup begins with a list of root server IPs.
-2.  **Querying:**
-    *   The code queries the first server from the list.
-3.  **Processing Response:**
-    *   If an answer is found, it prints the result.
-    *   If not, it extracts NS records from the authority section and resolves them.
-4.  **Stage Transition:**
-    *   The resolution stage is updated from ROOT to TLD to AUTH.
-5.  **Termination:**
-    *   The process continues until a valid answer is obtained or no servers respond.
+### 🔹 Timeout Configuration
+- The **3-second timeout** balances waiting time with failure handling.
 
 ---
 
-## Testing
+## 🔹 Implementation Details
 
-### Correctness Testing
+### 🛠️ High-Level Overview
 
-*   **Domain Verification:**
-    *   Ran tests with known domains (e.g., `google.com`, `example.com`) and compared outputs with standard tools like `nslookup` and `dig`.
-*   **Iterative vs. Recursive Comparison:**
-    *   Ensured that both iterative and recursive methods produce consistent results for the same input.
+Key functions in the project:
 
-### Stress Testing
+- **`send_dns_query(server, domain)`** → Constructs and sends a DNS query.
+- **`extract_next_nameservers(response)`** → Extracts NS records and resolves them.
+- **`iterative_dns_lookup(domain)`** → Manages iterative resolution (ROOT → TLD → AUTH).
+- **`recursive_dns_lookup(domain)`** → Uses the system’s resolver for recursive lookup.
 
-*   **Timeout and Error Handling:**
-    *   Tested scenarios with non-responsive DNS servers to ensure the timeout mechanism and error handling work correctly.
-*   **Edge Cases:**
-    *   Checked behavior for domains with no A records and for invalid domain inputs.
+### 🔹 Code Flow (Iterative DNS Lookup)
 
----
+```mermaid
+graph TD;
+    A[Start: Domain to Resolve] --> B[Set next_ns_list to Root Servers];
+    B --> C{While next_ns_list not empty?};
+    C -- Yes --> D[Pick first nameserver from list];
+    D --> E[Send DNS Query via UDP];
+    E --> F{Valid Response?};
+    F -- Yes --> G{Response contains answer?};
+    G -- Yes --> H[Print Answer and Exit];
+    G -- No --> I[Extract NS records and resolve to IPs];
+    I --> J[Update next_ns_list and Resolution Stage];
+    J --> C;
+    F -- No --> K[Print Error and Exit];
+    C -- No --> L[Print Resolution Failed];
+```
 
-## Restrictions
+### 🔹 Execution Steps
 
-*   **Resource Constraints:**
-    *   **Message Size:**
-        *   The maximum DNS message size is governed by the UDP protocol and the underlying DNS server configurations.
-
-
----
-
-## Challenges
-
-*   **Handling Network Unreliability:**
-    *   Managing UDP timeouts and handling non-responsive servers required careful exception handling.
-*   **NS Record Resolution:**
-    *   Extracting NS records from the authority section and reliably converting them to IP addresses proved challenging due to intermittent resolution failures.
-*   **Debugging Stages:**
-    *   Ensuring correct transitions between ROOT, TLD, and AUTH stages required thorough testing and debugging.
-
----
-
-## Contribution of Each Member
-
-*   **Single Member Project:**
-    
-    *   100% contribution by the author.
-    *   Palagiri Tousif Ahamad(220744): 100% 
+1. **Initialization:** Start with a list of root servers.
+2. **Query:** Send a DNS request.
+3. **Response Handling:** Extract answers or NS records.
+4. **Stage Transition:** Move from ROOT → TLD → AUTH servers.
+5. **Termination:** Stop when an answer is found or no responses remain.
 
 ---
 
-## Sources Referred
+## 🔹 Testing
 
-*   **dnspython Documentation:**
-    *   [dnspython library documentation](http://www.dnspython.org/)
-*   **Python Networking Tutorials:**
-    *   Various online tutorials on DNS resolution and network programming.
+### ✅ Correctness Testing
 
+- **Verified with domains:** `google.com`, `example.com`, and compared results with `nslookup` and `dig`.
+- **Comparison:** Ensured consistency between iterative and recursive lookups. But due to caching and the way servers are queried, results may vary.
+
+### ✅ Stress Testing
+
+- **Timeout/Error Handling:** Tested against unresponsive DNS servers.
+- **Edge Cases:** Checked behavior for invalid domains and missing A records.
 
 ---
 
-## Declaration
+## 🔹 Restrictions
 
-I hereby declare that I did not indulge in plagiarism and that this assignment represents my original work.
+- **Resource Constraints:**
+  - **Message Size:** Limited by UDP and DNS server configurations.
+
+---
+
+## 🔹 Challenges Faced
+
+- **Handling Network Unreliability:**
+  - Managing UDP timeouts and non-responsive servers.
+- **NS Record Resolution:**
+  - Extracting and converting NS records to IPs reliably.
+- **Debugging:**
+  - Ensuring correct transitions between ROOT, TLD, and AUTH servers.
+
+---
+
+## 🔹 Contribution
+
+👤 **Palagiri Tousif Ahamad (220744):** 100% Contribution
+
+---
+
+## 🔹 References
+
+- 📖 [dnspython Documentation](http://www.dnspython.org/)
+- 🔗 Various online networking & DNS resolution tutorials.
+
+---
+
+## 📜 Declaration
+
+I hereby declare that this assignment is my **original work** and does not involve plagiarism.
 
 ---

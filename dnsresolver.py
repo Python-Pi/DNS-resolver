@@ -109,10 +109,6 @@ def recursive_dns_lookup(domain):
         # Notice that the next line is looping through, therefore you should have something like answer = ??
         for rdata in answer:
             print(f"[SUCCESS] {domain} -> {rdata}")
-
-        answer = dns.resolver.resolve(domain, "A")
-        for rdata in answer:
-            print(f"[SUCCESS] {domain} -> {rdata}")
     except Exception as e:
         print(f"[ERROR] Recursive lookup failed: {e}")  # Handle resolution failure
 
