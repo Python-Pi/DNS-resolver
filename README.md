@@ -128,9 +128,3 @@ graph TD;
     *   [DNS Resolver GitHub Repository](https://github.com/Python-Pi/DNS-resolver)
 
 ---
-
-## 📜 Declaration
-
-I hereby declare that this assignment is my **original work** and does not involve plagiarism.
-
----
