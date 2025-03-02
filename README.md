@@ -122,6 +122,11 @@ graph TD;
 - 📖 [dnspython Documentation](http://www.dnspython.org/)
 - 🔗 Various online networking & DNS resolution tutorials.
 
+## Link
+
+*   **Project Repository:**
+    *   [DNS Resolver GitHub Repository](https://github.com/Python-Pi/DNS-resolver)
+
 ---
 
 ## 📜 Declaration
